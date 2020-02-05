@@ -67,7 +67,11 @@ class task:
             self.active = False
 
     def toString(self):
-        return self.assignee + " will do " + self.taskName + " at " #+ self.startDate
+        return self.assignee +\
+             " will do " + self.taskName +\
+             " at " + str(self.startDate.year) +\
+             "/" + str(self.startDate.month) +\
+             "/" + str(self.startDate.day)
 
 
 
@@ -134,7 +138,7 @@ def status(update, context):
     if not started:
         update.message.reply_text("Bot is inactive")
     else:
-        response = "Bot is active. active timers:\n"
+        response = "Bot is active. " + str(len(tasks)) + " active task(s).\n"
         for task in tasks:
             response += task.toString() + "\n"
         update.message.reply_text(response)

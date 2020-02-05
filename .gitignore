@@ -132,3 +132,4 @@ dmypy.json
 token.txt
 tasks.txt
 *.workspace
+tasks.json
