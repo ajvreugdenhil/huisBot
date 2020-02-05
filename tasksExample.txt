@@ -1,0 +1,23 @@
+{
+    "taskName":"Schoonmaken",
+    "startMessage":"Het is nu {assignee}'s beurt om schoon te maken",
+    "instances":
+    [
+        {
+            "assignee":"Arjan",
+            "startTime":1580895993  
+        },
+        {
+            "assignee":"Lennart",
+            "startTime":1580868000
+        },
+        {
+            "assignee":"Melissa",
+            "startTime":1580871600
+        },
+        {
+            "assignee":"Margo",
+            "startTime":1580875200
+        }
+    ]
+}
