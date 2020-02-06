@@ -9,6 +9,11 @@ from threading import Timer, Thread, Event
 import time
 import datetime
 import dateutil.parser
+import calendar
+import dateutil.relativedelta
+
+from task import task
+from perpetualTimer import perpetualTimer
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -20,81 +25,63 @@ def getToken():
     token = file.read()
     return token
 
-# Classes
-
-class perpetualTimer():
-   def __init__(self,t,method):
-      self.t=t
-      self.method = method
-      self.thread = Timer(self.t,self.handle_function)
-
-   def handle_function(self):
-      self.method()
-      self.thread = Timer(self.t,self.handle_function)
-      self.thread.start()
-
-   def start(self):
-      self.thread.start()
-
-   def cancel(self):
-      self.thread.cancel()
-
-
-class task:
-    def __init__(self, chat_id, taskName, assignee, startDate, startMessageTemplate):
-        self.chat_id = chat_id
-        self.taskName = taskName
-        self.assignee = assignee
-        self.startDate = dateutil.parser.parse(startDate)
-        self.startMessageTemplate = startMessageTemplate
-        self.active = False
-
-    def getStartMessage(self):
-        startMessage = self.startMessageTemplate.replace(
-            "{assignee}", self.assignee)
-        return startMessage
-
-    def getSecondsToGo(self):
-        currentDate = datetime.datetime.now()
-        timeDifference = (self.startDate - currentDate).total_seconds()
-        return timeDifference
-
-    def toString(self):
-        return self.assignee +\
-            " will do " + self.taskName +\
-            " at " + str(self.startDate.year) +\
-            "/" + str(self.startDate.month) +\
-            "/" + str(self.startDate.day)
-
-
 # Settings
 # folder for the users' data
 userFileLocation = "./userData/"
 # check active tasks every x seconds
-updateSpeed = 5
+updateSpeed = 1
+# days to plan ahead
+planAheadTime = 15
 
 
 # Task importation code
 
-def getTasksFromFile(filename):
+def getJsonFromFile(filename):
     file = open(userFileLocation + filename, "r")
     taskText = file.read()
     return json.loads(taskText)
 
-
-def startTasksFromFile(chat_id, filename="tasks.json"):
+def addStaticTaskSeed(chat_id, taskSeed):
     global tasks
-    newtaskdata = getTasksFromFile(filename)
-    newtasks = newtaskdata["instances"]
-    for newtask in newtasks:
+    for instance in taskSeed["instances"]:
         taskToBeBuilt = task(chat_id,
-                             newtaskdata["taskName"],
-                             newtask["assignee"],
-                             newtask["startDate"],
-                             newtaskdata["startMessage"])
+                             taskSeed["taskName"],
+                             instance["assignee"],
+                             instance["startDate"],
+                             taskSeed["startMessage"])
         if (taskToBeBuilt.getSecondsToGo() > 0):
             tasks.append(taskToBeBuilt)
-    
+
+def addGeneratorTaskSeed(chat_id, taskSeed):
+    global tasks
+    global planAheadTime
+    assigneeCount = len(taskSeed["assignees"])
+    seedStartDate = dateutil.parser.parse(taskSeed["startDate"])
+    seedInterval = datetime.timedelta(seconds=taskSeed["interval"])
+    i = 0
+    while seedStartDate + datetime.timedelta(seedInterval.days * i) < datetime.datetime.now() + datetime.timedelta(days=planAheadTime):
+        taskToBeBuilt = task(chat_id,
+                             taskSeed["taskName"],
+                             taskSeed["assignees"][i % assigneeCount],
+                             instance["startDate"],
+                             taskSeed["startMessage"])
+        if (taskToBeBuilt.getSecondsToGo() > 0):
+            tasks.append(taskToBeBuilt)
+        #i += seedInterval
+        i += 1
+
+def importTasksFromFile(chat_id, filename):
+    newtaskdata = getJsonFromFile(filename)
+    seeds = newtaskdata["taskSeeds"]
+    for seed in seeds:
+        if seed["type"] == "static":
+            pass
+            #addStaticTaskSeed(chat_id, seed)
+        elif seed["type"] == "generated":
+            addGeneratorTaskSeed(chat_id, seed)
+        else:
+            raise ValueError("bad task seed data")
+
 
 # Handlers
 
@@ -133,9 +120,9 @@ def start(update, context):
         mode = context.args[0]
     if (mode == "file"):
         if (len(context.args) == 2):
-            startTasksFromFile(chat_id, context.args[1])
+            importTasksFromFile(chat_id, context.args[1])
         else:
-            startTasksFromFile(chat_id)
+            importTasksFromFile(chat_id, "tasks.json")
     else:
         update.message.send_text("Invalid argument. Use /help for syntax.")
 
@@ -146,7 +133,6 @@ def start(update, context):
         #actually start the timer for checking active tasks
         timer.start()
         started = True
-
 
 
 def status(update, context):
@@ -188,9 +174,8 @@ def main():
                                   pass_args=True,
                                   pass_job_queue=True,
                                   pass_chat_data=True))
-    dp.add_error_handler(error)
+    #dp.add_error_handler(error)
     updater.start_polling()
-
     updater.idle()
 
 
