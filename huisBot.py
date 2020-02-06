@@ -8,7 +8,6 @@ import json
 from threading import Timer
 import time
 import datetime
-# import python-dateutil
 import dateutil.parser
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,10 +15,12 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+
 def getToken():
-    file = open("token.txt", "r") 
+    file = open("token.txt", "r")
     token = file.read()
     return token
+
 
 tasks = []
 bot = Bot(getToken())
@@ -28,17 +29,6 @@ started = False
 
 # Task code
 
-'''
-dict:
-    taskName
-    assignee
-    startTime
-    startMessage
-    stopTime
-    stopMessage
-    reminderInterval
-    reminderMessage
-'''
 
 class task:
     def __init__(self, chat_id, taskName, assignee, startDate, startMessageTemplate):
@@ -50,7 +40,8 @@ class task:
         self.active = False
 
     def getStartMessage(self):
-        startMessage = self.startMessageTemplate.replace("{assignee}", self.assignee)
+        startMessage = self.startMessageTemplate.replace(
+            "{assignee}", self.assignee)
         return startMessage
 
     def getSecondsToGo(self):
@@ -60,7 +51,8 @@ class task:
 
     def setTimer(self):
         if (self.getSecondsToGo() > 0):
-            self.timer = Timer(self.getSecondsToGo(), notify, kwargs={'task': self})
+            self.timer = Timer(self.getSecondsToGo(),
+                               notify, kwargs={'task': self})
             self.timer.start()
             self.active = True
         else:
@@ -68,42 +60,42 @@ class task:
 
     def toString(self):
         return self.assignee +\
-             " will do " + self.taskName +\
-             " at " + str(self.startDate.year) +\
-             "/" + str(self.startDate.month) +\
-             "/" + str(self.startDate.day)
+            " will do " + self.taskName +\
+            " at " + str(self.startDate.year) +\
+            "/" + str(self.startDate.month) +\
+            "/" + str(self.startDate.day)
 
 
-
-def getTasksFromFile():
-    file = open("tasks.json", "r")
+def getTasksFromFile(filename):
+    file = open(filename, "r")
     taskText = file.read()
     return json.loads(taskText)
 
-def startTasksFromFile(chat_id):
+
+def startTasksFromFile(chat_id, filename="tasks.json"):
     global tasks
-    newtaskdata = getTasksFromFile()
+    newtaskdata = getTasksFromFile(filename)
     newtasks = newtaskdata["instances"]
     for newtask in newtasks:
-        taskToBeBuilt = task(chat_id, \
-            newtaskdata["taskName"], \
-            newtask["assignee"], \
-            newtask["startDate"], \
-            newtaskdata["startMessage"])
+        taskToBeBuilt = task(chat_id,
+                             newtaskdata["taskName"],
+                             newtask["assignee"],
+                             newtask["startDate"],
+                             newtaskdata["startMessage"])
         if (taskToBeBuilt.getSecondsToGo() > 0):
             taskToBeBuilt.setTimer()
             tasks.append(taskToBeBuilt)
-        
 
 
 # Handlers
-    
+
 def notify(task):
     global tasks
     bot.send_message(chat_id=task.chat_id, text=task.getStartMessage())
     taskIndex = tasks.index(task)
     del tasks[taskIndex]
-    
+
+
 def start(update, context):
     global tasks
     global started
@@ -127,10 +119,14 @@ def start(update, context):
         mode = context.args[0]
 
     if (mode == "file"):
-        pass
-        startTasksFromFile(chat_id)
+        if (len(context.args) == 2):
+            startTasksFromFile(chat_id, context.args[1])
+        else:
+            startTasksFromFile(chat_id)
+
     else:
         update.message.send_text("Invalid argument. Use /help for syntax")
+
 
 def status(update, context):
     global started
@@ -145,7 +141,9 @@ def status(update, context):
 
 
 def help(update, context):
-    update.message.reply_text("Commands: \n/start [file | wip | wip] to (re)load tasks. \n/help for help \n/status for status")
+    update.message.reply_text(
+        "Commands: \n/start [file | wip | wip] to (re)load tasks. \n/help for help \n/status for status")
+
 
 def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
@@ -164,6 +162,7 @@ def main():
     updater.start_polling()
 
     updater.idle()
+
 
 if __name__ == '__main__':
     main()
