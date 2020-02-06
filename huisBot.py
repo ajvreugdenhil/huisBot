@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 def getToken():
-    file = open("token.txt", "r")
+    file = open(userFileLocation + "token.txt", "r")
     token = file.read()
     return token
 
-
+userFileLocation = "./userData/"
 tasks = []
 bot = Bot(getToken())
 updater = Updater(bot=bot, use_context=True)
@@ -67,7 +67,7 @@ class task:
 
 
 def getTasksFromFile(filename):
-    file = open(filename, "r")
+    file = open(userFileLocation + filename, "r")
     taskText = file.read()
     return json.loads(taskText)
 
@@ -94,6 +94,11 @@ def notify(task):
     bot.send_message(chat_id=task.chat_id, text=task.getStartMessage())
     taskIndex = tasks.index(task)
     del tasks[taskIndex]
+
+def welcome(update, context):
+    file = open(userFileLocation + "welcome.txt", "r")
+    welcomeText = file.read()
+    update.message.reply_text(welcomeText)
 
 
 def start(update, context):
@@ -142,7 +147,7 @@ def status(update, context):
 
 def help(update, context):
     update.message.reply_text(
-        "Commands: \n/start [file | wip | wip] to (re)load tasks. \n/help for help \n/status for status")
+        "Commands: \n/start [file [filename] | wip ] to (re)load tasks. \n/help for help \n/status for status")
 
 
 def error(update, context):
@@ -153,6 +158,7 @@ def error(update, context):
 def main():
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("welcome", welcome))
     dp.add_handler(CommandHandler("status", status))
     dp.add_handler(CommandHandler("start", start,
                                   pass_args=True,

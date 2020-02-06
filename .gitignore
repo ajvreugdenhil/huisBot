@@ -129,7 +129,5 @@ dmypy.json
 .pyre/
 
 # Huisbot
-token.txt
-tasks.txt
+userData/
 *.workspace
-tasks.json
