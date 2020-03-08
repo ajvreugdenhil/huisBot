@@ -3,8 +3,7 @@ import datetime
 import dateutil.parser
 
 class task:
-    def __init__(self, chat_id, taskName, assignee, startDate, startMessageTemplate):
-        self.chat_id = chat_id
+    def __init__(self, taskName, assignee, startDate, startMessageTemplate):
         self.taskName = taskName
         self.assignee = assignee
         self.startDate = dateutil.parser.parse(startDate)
