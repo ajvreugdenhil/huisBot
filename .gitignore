@@ -131,3 +131,5 @@ dmypy.json
 # Huisbot
 userData/
 *.workspace
+
+*.code-workspace

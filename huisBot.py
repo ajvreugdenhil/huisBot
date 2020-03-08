@@ -76,7 +76,7 @@ def importTasksFromFile(chat_id, filename):
     for seed in seeds:
         if seed["type"] == "static":
             pass
-            #addStaticTaskSeed(chat_id, seed)
+            addStaticTaskSeed(chat_id, seed)
         elif seed["type"] == "generated":
             addGeneratorTaskSeed(chat_id, seed)
         else:
@@ -110,7 +110,7 @@ def start(update, context):
         del tasks[:]
 
     chat_id = update.message.chat_id
-    
+    logging.info("")
     # Get the way the system should import the tasks
     mode = ""
     if (len(context.args) == 0):
