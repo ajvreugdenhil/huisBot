@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def getToken():
+    # FIXME ignore newline
     file = open("./token.txt", "r")
     token = file.read()
     return token
@@ -34,7 +35,7 @@ housesFileLocation = "./userData/"
 # check active tasks every x seconds
 updateSpeed = 1
 # days to plan ahead
-planAheadTime = 6
+planAheadTime = 31
 
 # House logic
 

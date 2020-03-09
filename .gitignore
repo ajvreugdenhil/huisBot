@@ -134,5 +134,5 @@ dmypy.json
 /old
 
 # Huisbot
-huisbot/userData/
-huisbot/token.txt
+userData/
+token.txt
