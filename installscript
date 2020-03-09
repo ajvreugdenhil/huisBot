@@ -1,5 +1,5 @@
-sudo apt-get install git
-sudo apt-get install python3
+sudo apt-get install git-all
+sudo apt-get install python3.6
 sudo apt-get install python3-pip
 pip install python-telegram-bot
 git clone -b dev https://github.com/ajvreugdenhil/huisBot
