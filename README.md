@@ -27,6 +27,6 @@ The bot works in multiple groups at the same time. Thread safety has not been as
 ## Upcoming features
 Because this is a short project, mostly aimed at teaching myself python, advances of this project are not guaranteed. You are welcome to submit pull requests. Features in consideration include:
 
--Advanced tasks (get the dates of when the garbage truck comes by)
--Stateful interaction (make it a little more user friendly)
--Data exportation (A nice pdf of the planning to hang in the living room)
+- Advanced tasks (get the dates of when the garbage truck comes by)
+- Stateful interaction (make it a little more user friendly)
+- Data exportation (A nice pdf of the planning to hang in the living room)
