@@ -24,6 +24,9 @@ It is also possible to make a list of subtasks, and of assignees, and generate m
 
 The bot works in multiple groups at the same time. Thread safety has not been assessed.
 
+![Screenshot of functionality](functionality-example.png "Screenshot")
+
+
 ## Upcoming features
 Because this is a short project, mostly aimed at teaching myself python, advances of this project are not guaranteed. You are welcome to submit pull requests. Features in consideration include:
 

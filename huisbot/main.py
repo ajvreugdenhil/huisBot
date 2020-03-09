@@ -241,6 +241,7 @@ def updateTask(update, context):
     currentHouse.taskSeedList.append(taskSeedDictionary)
     currentHouse.reloadTasks()
     update.message.reply_text("Added task")
+    saveHousesToFile(houses)
 
 
 def status(update, context):
