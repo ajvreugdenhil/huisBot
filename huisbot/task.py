@@ -20,9 +20,7 @@ class task:
         timeDifference = (self.startDate - currentDate).total_seconds()
         return timeDifference
 
-    def toString(self):
+    def __str__(self):
         return self.assignee +\
-            " will do " + self.taskName +\
-            " at " + str(self.startDate.year) +\
-            "/" + str(self.startDate.month) +\
-            "/" + str(self.startDate.day)
+            " - " + self.taskName +\
+            " - " + str(self.startDate)

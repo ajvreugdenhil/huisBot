@@ -26,14 +26,16 @@ def getToken():
     return token
 
 # Settings 
+
 # folder for the users' data
 housesFileLocation = "./userData/"
 # check active tasks every x seconds
 updateSpeed = 1
 # days to plan ahead
-planAheadTime = 15
+planAheadTime = 5
 
-# House shit
+
+# House logic
 
 def getHouse(chatId):
     global houses
@@ -59,21 +61,29 @@ class house:
             if (taskToBeBuilt.getSecondsToGo() > 0):
                 self.tasks.append(taskToBeBuilt)
 
+    # FIXME
     def addGeneratorTaskSeed(self, taskSeed):
         global planAheadTime
         assigneeCount = len(taskSeed["assignees"])
         seedStartDate = dateutil.parser.parse(taskSeed["startDate"])
         seedInterval = datetime.timedelta(seconds=taskSeed["interval"])
+        print(seedInterval)
         i = 0
-        while seedStartDate + datetime.timedelta(seedInterval.days * i) < datetime.datetime.now() + datetime.timedelta(days=planAheadTime):
-            taskToBeBuilt = task(taskSeed["taskName"],
-                                taskSeed["assignees"][i % assigneeCount],
-                                instance["startDate"],
-                                taskSeed["startMessage"])
-            if (taskToBeBuilt.getSecondsToGo() > 0):
-                self.tasks.append(taskToBeBuilt)
-            #i += seedInterval
+        while seedStartDate + datetime.timedelta(seconds=(seedInterval.total_seconds() * i )) < datetime.datetime.now() + datetime.timedelta(days=planAheadTime):
+            j = 0
+            for subtask in taskSeed["subtasks"]:
+                startDate = str(seedStartDate + datetime.timedelta(seconds=(seedInterval.total_seconds() * i )))
+                print(startDate)
+                taskToBeBuilt = task(taskSeed["taskName"] + ":" + subtask["taskName"],
+                                    taskSeed["assignees"][(i + j) % assigneeCount],
+                                    startDate,
+                                    subtask["startMessage"])
+                if (taskToBeBuilt.getSecondsToGo() > 0):
+                    self.tasks.append(taskToBeBuilt)
+                j += 1
             i += 1
+            if i > 50:
+                return
 
     def initializeTasks(self):
         for seed in self.taskSeedList:
@@ -81,8 +91,7 @@ class house:
             if seed["type"] == "static":
                 self.addStaticTaskSeed(seed)
             elif seed["type"] == "generated":
-                #self.addGeneratorTaskSeed(seed)
-                print("NOT IMPLEMENTED sorry for not throwing exception or whatev")
+                self.addGeneratorTaskSeed(seed)
             else:
                 raise ValueError("bad task seed data")
     
@@ -90,13 +99,13 @@ class house:
         self.tasks = []
         self.initializeTasks()
 
-    def toString(self):
-        return self.chatId
+    def __str__(self):
+        return str(self.chatId)
 
 
 
 
-# Data importation code
+# Data importation and exportation
 
 def getJsonFromFile(filename):
     file = open(housesFileLocation + filename, "r")
@@ -112,11 +121,26 @@ def loadHousesFromFile(filename = "houses.json"):
         result.append(newHouse)
     return result
 
+def saveHousesToFile(newHouses, filename = "houses.json"):
+    result = []
+    for house in newHouses:
+        houseDict = {}
+        houseDict["chatId"] = house.chatId
+        houseDict["welcomeMessage"] = house.welcomeMessage
+        houseDict["taskSeeds"] = house.taskSeedList
+        result.append(houseDict)
+    resultAsJson = json.dumps(result, indent=4)
+    file = open(housesFileLocation + filename, "w")
+    file.write(resultAsJson)
+
+
+
 
 
 # Handlers
 
 def handleActiveTasks():
+    # FIXME move logic into house class
     global houses
     for house in houses:
         for task in house.tasks:
@@ -131,22 +155,43 @@ def welcome(update, context):
     update.message.reply_text(welcomeText, parse_mode="Markdown")
 
 def debug(update, context):
-    print(update.message.chat_id)
-    pass
+    global houses
+    saveHousesToFile(houses)
+    loadHousesFromFile()
+
+def reload(update, context):
+    print("reloading")
+    global houses
+    houses = []
+    houses = loadHousesFromFile()
+
+def updateHouse(update, context):
+    raise NotImplemented
+    
+def updateTask(update, context):
+    raise NotImplemented
 
 def status(update, context):
     house = getHouse(update.message.chat_id)
-    #house.reloadTasks()
-    print(house.chatId)
-    print("______________")
-    print(house.taskSeedList)
-    print("______________")
-    print(house.tasks[0].toString())
+    if house == None:
+        update.message.reply_text("No house exists here!")
+        return
+
+    maximumTasks = 20
+    statusString = ""
+    statusString += "The following tasks are planned:\n"
+    for task in house.tasks:
+        startdate = str(task.startDate)
+        statusString += ("%s will do %s at %s\n" % (task.assignee, task.taskName, startdate))
+        maximumTasks -= 1
+        if maximumTasks < 0:
+            break
+    update.message.reply_text(statusString)
 
 
 def help(update, context):
     update.message.reply_text(
-        "Commands: \n/start [file [filename] | wip ] to (re)load tasks. \n/help for help \n/status for status")
+        "WIP")
 
 
 def error(update, context):
@@ -166,17 +211,20 @@ def main():
     global houses
     houses = loadHousesFromFile()
     dp = updater.dispatcher
-    dp.add_handler(CommandHandler("debug", debug))
+    dp.add_handler(CommandHandler("debug", debug, pass_args=True))
+    dp.add_handler(CommandHandler("reload", reload, pass_args=True))
+    dp.add_error_handler(error)
+
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("welcome", welcome))
     dp.add_handler(CommandHandler("status", status, pass_args=True))
-    dp.add_error_handler(error)
+    dp.add_handler(CommandHandler("initiate", updateHouse, pass_args=True))
+    dp.add_handler(CommandHandler("task", updateTask, pass_args=True))
+    
 
     timer.start()
-
     updater.start_polling()
     updater.idle()
-
     timer.cancel()
 
 
