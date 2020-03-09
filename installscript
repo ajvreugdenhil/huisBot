@@ -1,7 +1,5 @@
-sudo apt-get install python3.6
-sudo apt-get install python3-pip
 sudo pip install python-telegram-bot
 curl http://commondatastorage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-chmod a+x ~/bin/repo
+sudo chmod a+x ~/bin/repo
 repo init -b dev -u https://github.com/ajvreugdenhil/huisBot
 ./setup.sh
