@@ -1,6 +1,8 @@
 sudo apt-get update
 sudo pip install python-telegram-bot
+sudo pip install python-dateutil
 sudo apt-get install git -y
 git clone -b dev https://github.com/ajvreugdenhil/huisBot
 cd huisbot
+sudo chmod +x ./setup.sh
 ./setup.sh
