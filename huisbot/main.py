@@ -71,6 +71,7 @@ class house:
         seedStartDate = dateutil.parser.parse(taskSeed["startDate"])
         seedInterval = datetime.timedelta(seconds=taskSeed["interval"])
         i = 0
+        
         while seedStartDate + datetime.timedelta(seconds=(seedInterval.total_seconds() * i)) < datetime.datetime.now() + datetime.timedelta(days=planAheadTime):
             j = 0
             for subtask in taskSeed["subtasks"]:
@@ -81,7 +82,7 @@ class house:
                     taskname = subtask["taskName"]
                 assignee = "everyone"
                 if assigneeCount > 0:
-                    assignee = taskSeed["assignees"][(i + j) % assigneeCount]
+                    assignee = taskSeed["assignees"][(j + (assigneeCount - i - 1)) % assigneeCount]
                 taskToBeBuilt = task(taskname,
                                      assignee,
                                      startDate,
@@ -90,7 +91,7 @@ class house:
                     self.tasks.append(taskToBeBuilt)
                 j += 1
             i += 1
-            if i > 50:
+            if i > 200:
                 return
 
     def initializeTasks(self):
