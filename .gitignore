@@ -128,8 +128,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Huisbot
-token.txt
-tasks.txt
+# Eigen standaard ignores
+*.code-workspace
 *.workspace
-tasks.json
+/old
+
+# Huisbot
+userData/
+token.txt
