@@ -12,13 +12,6 @@ housesFileLocation = "./userData/"
 # days to plan ahead
 planAheadTime = 31
 
-def getHouse(chatId):
-    global houses
-    for house in houses:
-        if house.chatId == chatId:
-            return house
-    return None
-
 class house:
     def __init__(self, chatId, welcomeMessage, taskSeedList):
         self.chatId = chatId
@@ -84,6 +77,12 @@ class house:
 
     def __str__(self):
         return str(self.chatId)
+
+def getHouse(houses, chatId):
+    for house in houses:
+        if house.chatId == chatId:
+            return house
+    return None
 
 
 # Data importation and exportation

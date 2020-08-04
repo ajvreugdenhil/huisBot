@@ -16,6 +16,10 @@ from perpetualTimer import perpetualTimer
 
 # check active tasks every x seconds
 updateSpeed = 1
+# I don't like it but houses are global for the 
+# handler methods to access
+# I bet there's a proper way to do it but idk
+telegramHouses = []
 
 def getToken():
     # FIXME ignore newline
@@ -27,9 +31,9 @@ def getToken():
 # Handlers
 
 def handleActiveTasks():
-    # FIXME move logic into house class
-    global houses
-    for house in houses:
+    # TODO: move logic into house class?
+    global telegramHouses
+    for house in telegramHouses:
         for task in house.tasks:
             if (task.getSecondsToGo() <= 0):
                 bot.send_message(chat_id=house.chatId,
@@ -39,8 +43,9 @@ def handleActiveTasks():
 
 
 def welcome(update, context):
+    global telegramHouses
     chatId = update.message.chat_id
-    currentHouse = getHouse(update.message.chat_id)
+    currentHouse = getHouse(telegramHouses, update.message.chat_id)
     if currentHouse == None:
         update.message.reply_text("No house exists here!")
         return
@@ -60,12 +65,12 @@ def debug(update, context):
     returntext += json.dumps(currentHouse.taskSeedList, indent=2)
     update.message.reply_text(returntext)
 '''
-
+'''
 def reload(update, context):
     global houses
     houses = []
     houses = loadHousesFromFile()
-
+'''
 '''
 def updateHouse(update, context):
     global houses
@@ -150,7 +155,6 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 
-houses = []
 bot = Bot(getToken())
 updater = Updater(bot=bot, use_context=True)
 timer = perpetualTimer(updateSpeed, handleActiveTasks)
@@ -160,7 +164,6 @@ class telegramInterface (threading.Thread):
         self.stopFlag = False
         self.reloadFlag = False
         dp = updater.dispatcher
-        dp.add_handler(CommandHandler("reload", reload, pass_args=True))
         dp.add_error_handler(error)
 
         dp.add_handler(CommandHandler("help", help))
@@ -176,7 +179,10 @@ class telegramInterface (threading.Thread):
                 # None None is ugly but I dont think python has method overloading :/
                 # also maybe the solution here is removing the /reload command but
                 # that's a problem for future me
-                reload(None, None)
+                
+                #reload(None, None)
+                # Lol maybe get rid of the entire concept of reloading
+                # hmmm thread safety tho
 
         updater.stop()
         timer.cancel()

@@ -1,0 +1,27 @@
+body {
+    padding: 5px;
+    background: #005099;
+    font-family: "Trebuchet MS", Verdana, Arial, serif;
+}
+
+.column-container {
+    display: flex;
+  }
+.data {
+    flex: 50%;
+}
+.rendering {
+    flex: 50%;
+}
+
+.tasks-container {
+    display: flex;
+    flex-wrap: wrap;
+    font-family: Tahoma, serif;
+    gap: 10px;
+}
+
+.taskbox {
+    background: white;
+    padding: 5px;
+}

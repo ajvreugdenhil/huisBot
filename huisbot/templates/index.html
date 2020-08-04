@@ -1,0 +1,36 @@
+<head>
+    <title>Huisbot</title>
+    <link href="{{ url_for('static', filename='stylesheets/style.css') }}" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="column-container"> 
+        <div class="data">
+
+            <textarea name="seedData" rows="24" cols="80" form="seedSubmission">
+                {{ seed }} 
+            </textarea>
+            <form action="/submit" method="post" id="seedSubmission">
+                <br>
+                <input type="hidden" name="groupid" value={{ groupid }}>
+                <input type="text" name="key" value="DEADBEEF">
+                <br>
+                <input type="submit" value="Submit & reload bot">
+            </form>
+        </div>
+        <div class="rendering">
+            <div class="tasks-container">
+                {% for task in tasks %}
+                    <div class="taskbox">
+                        {{ task.taskName }} <br>
+                        {{ task.startDate }} <br>
+                        {{ task.assignee }}
+                    </div>
+                {%endfor%}
+            </div>
+        </div>
+    </div>
+
+
+    
+</body>
